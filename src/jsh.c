@@ -1,7 +1,12 @@
+#include "jsh.h"
+
 #include <stdio.h>
 #include <mujs.h>
 
 #include "library.h"
+
+
+char jsh_exceptions=1;
 
 
 static int runScript(js_State *J, const char *fname)
@@ -24,6 +29,18 @@ static int runScript(js_State *J, const char *fname)
 }
 
 
+static void jsB_exceptions(js_State *J)
+{
+	if (! js_isboolean(J, 1))
+		js_error(J, "incorrect jsh.exceptions() arguments");
+	
+	char prev=jsh_exceptions;
+	jsh_exceptions=js_toboolean(J, 1);
+	
+	js_pushboolean(J, prev);
+}
+
+
 int main(int argc, char **argv)
 {
 	// Checking command line
@@ -36,29 +53,36 @@ int main(int argc, char **argv)
 	// Creating JavaScript engine
 	js_State *J=js_newstate(NULL, NULL, JS_STRICT);
 	
-	// Getting script file name
-	const char *script_fname=argv[1];
-	
-	// Passing args
+	// Creating jsh object
 	js_newobject(J);
+	
+	js_newstring(J, argv[0]);
+	js_setproperty(J, -2, "shell");
+	
+	js_newstring(J, argv[1]);
+	js_setproperty(J, -2, "script");
+	
 	js_newarray(J);
 	for (int n=0; n<argc-2; n++)
 	{
 		js_pushstring(J, argv[2+n]);
 		js_setindex(J, n, -2);
 	}
-	js_setproperty(J, -2, "argv");
-	js_setglobal(J, "process");
+	js_setproperty(J, -2, "args");
+	
+	js_newcfunction(J, jsB_exceptions, "exceptions", 1);
+	js_setproperty(J, -2, "exceptions");
+	
+	js_setglobal(J, "jsh");
 	
 	// Creating library
 	initLibrary(J);
 	
 	// Starting script
-	int ret=runScript(J, script_fname);
+	int ret=runScript(J, argv[1]);
 	
 	// Deleting JS engine
 	js_freestate(J);
 	
-	printf("Return value=%d\n", ret);
 	return ret;
 }

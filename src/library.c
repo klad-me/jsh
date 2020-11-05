@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "library_console.h"
+#include "library_shell.h"
+#include "library_file.h"
+
 
 static const unsigned char js_init[]={
 #include "js_init.h"
@@ -25,23 +29,11 @@ static void jsB_load(js_State *J)
 }
 
 
-static void jsB_print(js_State *J)
-{
-	int i, top = js_gettop(J);
-	for (i = 1; i < top; ++i)
-	{
-		const char *s = js_tostring(J, i);
-		fputs(s, stdout);
-	}
-	fflush(stdout);
-	js_pushundefined(J);
-}
-
-
 static void jsB_exit(js_State *J)
 {
 	int ret=0;
-	if (js_isnumber(J, 1)) ret=js_tonumber(J, 1);
+	if (js_isnumber(J, 1))
+		ret=js_tonumber(J, 1);
 	
 	exit(ret);
 }
@@ -53,13 +45,17 @@ void initLibrary(js_State *J)
 	js_newcfunction(J, jsB_load, "load", 1);
 	js_setglobal(J, "load");
 	
-	js_newcfunction(J, jsB_print, "print", 0);
-	js_dup(J);
-	js_setglobal(J, "print");
-	js_setglobal(J, "echo");
-	
 	js_newcfunction(J, jsB_exit, "exit", 1);
 	js_setglobal(J, "exit");
+	
+	// Console i/o
+	initLibrary_console(J);
+	
+	// Shell tools
+	initLibrary_shell(J);
+	
+	// File i/o
+	initLibrary_file(J);
 	
 	
 	// JavaScript-written library functions

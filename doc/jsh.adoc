@@ -1,0 +1,301 @@
+jsh - JavaScript shell
+======================
+
+
+Usage
+-----
+
+To run script file:
+----------
+jsh <script.js> [args]
+----------
+
+Scripts can also start with '#! /path/to/jsh' to run as executable (don't forget to do _chmod +x script.js_).
+
+Example _script.js_:
+----------
+#! jsh
+
+echo("Hello from jsh !");
+----------
+
+Run it:
+----------
+# chmod a+x script.js
+
+# ./script.js
+Hello from jsh !
+----------
+
+
+
+
+
+Encoding
+--------
+_jsh_ assumes text encoding is _UTF-8_ everywhere.
+
+
+
+
+
+*jsh* object (shell control)
+----------------------------
+
+jsh.shell
+~~~~~~~~~
+Path to _jsh_ binary.
+
+
+jsh.script
+~~~~~~~~~~
+Path to executing script.
+
+
+jsh.args
+~~~~~~~~
+Array of script arguments (array of strings).
+
+
+jsh.exceptions(on)
+~~~~~~~~~~~~~~~~~~
+Controls handling of error in _jsh_ stdlib. If exceptions are on, jsh will raise exceptions on standard library call,
+otherwise it will return special values, such as _false_, _undefined_ or _null_ (see later).
+
+Returns: previous value, so you can enable/disable it and then revert changes.
+
+NOTE: default is on (all stdlib functions will throw exception on error).
+
+NOTE: functions will always raise exepections on incorrect arguments (not execution error).
+
+
+
+Console functions
+-----------------
+
+print(...)
+~~~~~~~~~~
+Prints any number of arguments to _stdout_ without newline.
+
+NOTE: print() doesn't automatically print new line !
+
+
+
+
+echo(...)
+~~~~~~~~~
+Prints any number of arguments to _stdout_ with newline at the end.
+
+
+
+
+read(timeout)
+~~~~~~~~~~~~~
+Reads string from _stdin_.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| timeout	| Number	| no		| -			| Timeout in seconds to wait for input, 0 for infinity (supports fractions such as 0.05 = 50ms)
+|=========
+
+Returns: read string or success, or _null_ on EOF.
+
+_timeout_ specifies maximum time to wait for next character, not the whole line. On timeout read() returns partially read string or '' if nothing was read.
+
+Then the string is fully read, it contains '\n' ending character.
+
+NOTE: Maximum string size is 64k bytes.
+
+NOTE: String will contain '\r' and '\n' characters.
+
+
+
+
+
+Shell functions
+---------------
+
+
+pwd()
+~~~~~
+Returns current working directory.
+
+Returns: current working directory (string).
+
+
+
+
+cd(path)
+~~~~~~~~
+Changes current working directory to specified path.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| path		| String	| YES		| -			| New working directory (relative or absolute)
+|=========
+
+On error raises exception or returns _false_.
+
+
+
+stat(filename)
+~~~~~~~~~~~~~~
+Returns attributes of file.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| filename	| String	| YES		| 			| File name to read attributes
+|=========
+
+Returns: object containing file attributes.
+
+NOTE: Most of the values belongs to _destination_ file, not for symlink if file is a symlink.
+
+Attribute object contents:
+[options="header",cols="1,1,10"]
+|=========
+| Key		| Type		| Description
+| type		| String	| File type
+| size		| Number	| File size in bytes
+| mode		| Number	| Unix-style mode (octal), like 0755 or 0644
+| uid		| Number	| File owner user ID
+| gid		| Number	| File owner group ID
+| symlink	| String	| Value of symlink (path), only if entry is a symlink
+| major		| Number	| Major device number, only for char and block devices
+| minor		| Number	| Minor device number, only for char and block devices
+|=========
+
+File types:
+[options="header",cols="1,10"]
+|=========
+| Value		| Description
+| 'file'	| Regular file
+| 'dir'		| Directory
+| 'char'	| Character special device
+| 'block'	| Block special device
+| 'fifo'	| FIFO
+| 'socket'	| Socket
+| undefined	| Unknown file type (or broken symlink)
+|=========
+
+On error raises exception or returns _null_.
+
+
+
+ls(path, hidden)
+~~~~~~~~~~~~~~~~
+Returns list of files and subdirectories with their attributes.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| path		| String	| no		| .			| Directory to list
+| hidden	| Boolean	| no		| false		| Include hidden files to list (hidden file name starts with '.')
+|=========
+
+Returns: object containing file names as keys and their attributes as values (see _stat_).
+
+On error raises exception or returns _null_.
+
+
+
+
+mkdir(path)
+~~~~~~~~~~~
+Creates directory.
+
+NOTE: mkdir() doesn't create subdirectories.
+
+On error raises exception or returns _null_.
+
+
+
+
+rmdir(path)
+~~~~~~~~~~~
+Removes empty directory.
+
+NOTE: rmdir() can't remove non-empty directory.
+
+On error raises exception or returns _null_.
+
+
+
+
+*file* object (file i/o functions)
+----------------------------------
+
+
+file.read(filename)
+~~~~~~~~~~~~~~~~~~~
+Returns contents of text file as string.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| filename	| String	| YES		| 			| File to read
+|=========
+
+Returns: string containing data of text file.
+
+On error raises exception or returns _null_.
+
+
+
+
+file.readBinary(filename)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns contents of binary file as array of bytes (Numbers 0..255).
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| filename	| String	| YES		| 			| File to read
+|=========
+
+Returns: array of Numbers containing data of binary file.
+
+On error raises exception or returns _null_.
+
+
+
+
+file.write(filename, text)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Writes text from string to file.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| filename	| String	| YES		| 			| File to write
+| text		| String	| YES		|			| Text to write
+|=========
+
+On error raises exception or returns _false_.
+
+
+
+
+file.writeBinary(filename, array)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Writes binary data from byte array to file (see file.read).
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| filename	| String	| YES		| 			| File to write
+| array		| Number[]	| YES		|			| Data to write
+|=========
+
+On error raises exception or returns _false_.

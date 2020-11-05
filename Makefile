@@ -8,8 +8,11 @@
 ##############################################################################
 
 C_SOURCES+= \
-	src/main.c			\
-	src/library.c		\
+	src/jsh.c				\
+	src/library.c			\
+	src/library_console.c	\
+	src/library_shell.c		\
+	src/library_file.c		\
 	mujs.git/one.c
 
 ##############################################################################
@@ -35,9 +38,10 @@ DEPDIR=.dep
 ##  Compiler configuration
 ##############################################################################
 CC?=$(CROSS_COMPILE)gcc
+STRIP?=$(CROSS_COMPILE)strip
 INCLUDES=-Isrc -Imujs.git
 DEFINES=
-CFLAGS=-Wall -Wstrict-prototypes -Wshadow -O3 -fmerge-all-constants -g $(INCLUDES) $(DEFINES)
+CFLAGS=-Wall -Wstrict-prototypes -Wshadow -Os -fmerge-all-constants $(INCLUDES) $(DEFINES)
 LIBS=-lm
 LDFLAGS=$(LIBS) -Wl,--relax,--gc-sections
 ##############################################################################
@@ -52,7 +56,7 @@ $(BINDIR)/$(BIN): $(C_SOURCES:%.c=$(OBJDIR)/%.c.o)
 	@set -e; \
 	echo "Linking..."; \
 	mkdir -p $(BINDIR); \
-	$(CC) $(LDFLAGS) -o $@ $+
+	$(CC) $(LDFLAGS) -o $@ $+ && $(STRIP) $@
 
 # Target for clean
 clean:

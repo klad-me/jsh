@@ -264,6 +264,75 @@ On error raises exception or returns _null_.
 
 
 
+
+Job control
+-----------
+
+bg(function)
+~~~~~~~~~~~~
+Run function in background process. Makes a copy of calling process.
+Function return value will be used as process exit code.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| function	| Function	| YES		| 			| Function to execute in background
+|=========
+
+Returns: _pid_ of new process.
+
+
+
+
+fg(pid)
+~~~~~~~
+Move background process _pid_ to foreground (wait for a process to exit).
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| pid		| Number	| YES		| 			| _pid_ of process to wait for
+|=========
+
+Returns: exit code of process.
+
+
+
+
+kill(pid, sig)
+~~~~~~~~~~~~~~
+Send signal _sig_ to process _pid_.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| pid		| Number	| YES		| 			| _pid_ of process
+| sig		| Number/String | NO	| 'SIGTERM'	| Signal to send
+|=========
+
+Signal can be specified by number or by name.
+Available signal names are: 'SIGINT', 'SIGKILL', 'SIGSTOP', 'SIGTERM', 'SIGUSR1', 'SIGUSR2'.
+
+
+
+
+sleep(t)
+~~~~~~~~
+Delay for specified time in seconds.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| t			| Number	| YES		| 			| Time to wait in second (fractions available)
+|=========
+
+
+
+
 *file* object (file i/o functions)
 ----------------------------------
 
@@ -334,3 +403,4 @@ Arguments:
 |=========
 
 On error raises exception or returns _false_.
+

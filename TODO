@@ -5,6 +5,7 @@
 - append, appendBinary
 - exec
 - pipe
+- code from command line
 
 
 + cd
@@ -13,3 +14,8 @@
 + read stdin
 + set, unset
 + env
++ fork and exec function
+	bg
+	fg
+	kill
++ sleep

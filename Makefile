@@ -13,6 +13,7 @@ C_SOURCES+= \
 	src/library_console.c	\
 	src/library_shell.c		\
 	src/library_file.c		\
+	src/library_job.c		\
 	mujs.git/one.c
 
 ##############################################################################

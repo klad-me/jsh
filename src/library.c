@@ -7,6 +7,7 @@
 #include "library_console.h"
 #include "library_shell.h"
 #include "library_file.h"
+#include "library_job.h"
 
 
 static const unsigned char js_init[]={
@@ -56,6 +57,9 @@ void initLibrary(js_State *J)
 	
 	// File i/o
 	initLibrary_file(J);
+	
+	// Job control
+	initLibrary_job(J);
 	
 	
 	// JavaScript-written library functions

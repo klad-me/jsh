@@ -9,6 +9,7 @@
 
 C_SOURCES+= \
 	src/main.c			\
+	src/library.c		\
 	mujs.git/one.c
 
 ##############################################################################
@@ -57,17 +58,25 @@ $(BINDIR)/$(BIN): $(C_SOURCES:%.c=$(OBJDIR)/%.c.o)
 clean:
 	rm -rf $(DEPDIR)
 	rm -rf $(OBJDIR)
+	rm -f src/js_init.h
 
 # Target for distclean
 distclean:
 	rm -f $(BINDIR)/$(BIN)
 	rm -rf $(DEPDIR)
 	rm -rf $(OBJDIR)
+	rm -f src/js_init.h
 
 
 # PHONY
 .PHONY: all
 
+
+# Rule for making include from all .js files
+src/library.c: src/js_init.h
+src/js_init.h: $(wildcard src/js_init/*.js)
+	@echo "Creating $@"; \
+	cat $+ | xxd -i >$@
 
 # Rule for compiling & deps generation
 $(OBJDIR)/%.c.o: %.c

@@ -8,8 +8,98 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <ctype.h>
 
 #include "jsh.h"
+
+
+extern char **environ;
+
+
+static void jsB_env(js_State *J)
+{
+	if (js_isstring(J, 1))
+	{
+		const char *find=js_tostring(J, 1);
+		int find_len=strlen(find);
+		
+		int n=0;
+		while (environ[n])
+		{
+			if ( (strncasecmp(environ[n], find, find_len) == 0) &&
+				 (environ[n][find_len] == '=') )
+			{
+				js_pushstring(J, environ[n]+find_len+1);
+				return;
+			}
+			
+			n++;
+		}
+		
+		js_pushundefined(J);
+	} else
+	{
+		js_newobject(J);
+		
+		int n=0;
+		while (environ[n])
+		{
+			char *value=strchr(environ[n], '=');
+			if (! value)
+			{
+				n++;
+				continue;
+			}
+			int name_len=value - environ[n];
+			char name[name_len+1];
+			strncpy(name, environ[n], name_len);
+			name[name_len]=0;
+			value++;
+			
+			js_pushstring(J, value);
+			js_setproperty(J, -2, name);
+			
+			n++;
+		}
+	}
+}
+
+
+static void jsB_set(js_State *J)
+{
+	if ( (! js_isstring(J, 1)) ||
+		 (! js_isstring(J, 2)) )
+	{
+		js_error(J, "bad set() arguments");
+	}
+	
+	const char *var=js_tostring(J, 1);
+	const char *value=js_tostring(J, 2);
+	
+	const char *ss;
+	if ( (! isalpha(var[0])) && (var[0] != '_') )
+		js_error(J, "bad environment variable name");
+	for (ss=var+1; (*ss); ss++)
+		if ( (! isalnum(*ss)) && ((*ss) != '_') )
+			js_error(J, "bad environment variable name");
+	
+	setenv(var, value, 1);
+	
+	js_pushundefined(J);
+}
+
+
+static void jsB_unset(js_State *J)
+{
+	if (! js_isstring(J, 1))
+	{
+		js_error(J, "bad unset() arguments");
+	}
+	
+	unsetenv(js_tostring(J, 1));
+	
+	js_pushundefined(J);
+}
 
 
 static void jsB_pwd(js_State *J)
@@ -234,6 +324,15 @@ static void jsB_ls(js_State *J)
 void initLibrary_shell(js_State *J)
 {
 	// Global functions
+	js_newcfunction(J, jsB_env, "env", 0);
+	js_setglobal(J, "env");
+	
+	js_newcfunction(J, jsB_set, "set", 0);
+	js_setglobal(J, "set");
+	
+	js_newcfunction(J, jsB_unset, "unset", 0);
+	js_setglobal(J, "unset");
+	
 	js_newcfunction(J, jsB_pwd, "pwd", 0);
 	js_setglobal(J, "pwd");
 	

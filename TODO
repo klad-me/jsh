@@ -1,0 +1,15 @@
+- cp
+- mv
+- rm recursively
+- printf, sprintf
+- append, appendBinary
+- exec
+- pipe
+
+
++ cd
++ pwd
++ stat
++ read stdin
++ set, unset
++ env

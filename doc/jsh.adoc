@@ -296,7 +296,23 @@ Arguments:
 | pid		| Number	| YES		| 			| _pid_ of process to wait for
 |=========
 
-Returns: exit code of process.
+Returns: exit code of process or _undefined_ on error.
+
+
+
+
+checkpid(pid)
+~~~~~~~~~~~~~
+Check process _pid_ status.
+
+Arguments:
+[options="header",cols="1,1,1,1,10"]
+|=========
+| Argument	| Type		| Required	| Default	| Description
+| pid		| Number	| YES		| 			| _pid_ of process to check
+|=========
+
+Returns: exit code of process if it was finished, -1 if it is still working, or _undefined_ on error.
 
 
 

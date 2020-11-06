@@ -43,9 +43,26 @@ static void jsB_wait(js_State *J)
 {
 	if (! js_isnumber(J, 1))
 		js_error(J, "bad wait() arguments");
+	pid_t pid=js_tonumber(J, 1);
 	int status;
-	if (waitpid(js_tonumber(J, 1), &status, 0) < 0) status=-1;
-	js_pushnumber(J, WEXITSTATUS(status));
+	if (waitpid(pid, &status, 0) != pid)
+		js_pushundefined(J); else
+		js_pushnumber(J, WEXITSTATUS(status));
+}
+
+
+static void jsB_checkpid(js_State *J)
+{
+	if (! js_isnumber(J, 1))
+		js_error(J, "bad checkpid() arguments");
+	pid_t pid=js_tonumber(J, 1);
+	int status;
+	int rt=waitpid(pid, &status, WNOHANG);
+	if (rt == 0)
+		js_pushnumber(J, -1); else
+	if (rt == pid)
+		js_pushnumber(J, WEXITSTATUS(status)); else
+		js_pushundefined(J);
 }
 
 
@@ -113,6 +130,9 @@ void initLibrary_job(js_State *J)
 	
 	js_newcfunction(J, jsB_wait, "wait", 1);
 	js_setglobal(J, "wait");
+	
+	js_newcfunction(J, jsB_checkpid, "checkpid", 1);
+	js_setglobal(J, "checkpid");
 	
 	js_newcfunction(J, jsB_kill, "kill", 1);
 	js_setglobal(J, "kill");

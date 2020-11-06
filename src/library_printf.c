@@ -6,50 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-
-typedef struct strbuf
-{
-	int size, len;
-	char *str;
-} strbuf_t;
-
-
-static int ensureCapacity(strbuf_t *str, int len)
-{
-	if (str->len + len + 1 > str->size)
-	{
-		int new_size=str->len + len + 256;
-		char *new_str=(char*)realloc(str->str, new_size);
-		if (! new_str) return 0;
-		str->size=new_size;
-		str->str=new_str;
-	}
-	
-	return 1;
-}
-
-
-static int appendChar(strbuf_t *str, char c)
-{
-	if (! ensureCapacity(str, 1)) return 0;
-	
-	str->str[str->len++]=c;
-	
-	return 1;
-}
-
-
-static int appendString(strbuf_t *str, const char *s)
-{
-	int l=strlen(s);
-	
-	if (! ensureCapacity(str, l)) return 0;
-	
-	memcpy(str->str + str->len, s, l);
-	str->len+=l;
-	
-	return 1;
-}
+#include "strbuf.h"
 
 
 static int skip_atoi(const char **s)
@@ -61,7 +18,7 @@ static int skip_atoi(const char **s)
 }
 
 
-static char* internal_sprintf(js_State *J)
+static strbuf_t* internal_sprintf(js_State *J)
 {
 #define ALTFORM		0x0001
 #define ZERO		0x0002
@@ -81,12 +38,8 @@ static char* internal_sprintf(js_State *J)
 		 (! js_isstring(J, 1)) )
 		js_error(J, "bad sprintf() arguments");
 	
-	strbuf_t str;
-	str.size=256;
-	str.len=0;
-	str.str=(char*)malloc(str.size);
-	if (! str.str)
-		js_error(J, "out of memory");
+	strbuf_t *str=strbuf_new();
+	if (! str) js_error(J, "out of memory");
 	
 	const char *fmt;
 	for (fmt=js_tostring(J,1); *fmt; fmt++)
@@ -94,7 +47,7 @@ static char* internal_sprintf(js_State *J)
 		// Copying chars up to '%' sign
 		if ((*fmt) != '%')
 		{
-			if (! appendChar(&str, *fmt)) break;
+			if (! strbuf_appendChar(str, *fmt)) break;
 			continue;
 		}
 		
@@ -163,6 +116,7 @@ parse_flags:
 		
 		// Parsing specifier
 		specifier=*fmt;
+		if (! specifier) break;
 		switch (*fmt)
 		{
 			case 'c':
@@ -195,7 +149,7 @@ parse_flags:
 			
 			case '%':
 				// Just '%'
-				appendChar(&str, '%');
+				strbuf_appendChar(str, '%');
 				continue;
 			
 			default:
@@ -215,11 +169,11 @@ parse_flags:
 			if (! (flags & LEFT))
 			{
 				while (len < field_width--)
-					appendChar(&str, ' ');
+					strbuf_appendChar(str, ' ');
 			}
-			appendString(&str, s);
+			strbuf_appendString(str, s);
 			while (len < field_width--)
-				appendChar(&str, ' ');
+				strbuf_appendChar(str, ' ');
 		} else
 		if (flags & FLOAT)
 		{
@@ -242,9 +196,9 @@ parse_flags:
 			(*s)=0;
 			
 			int len=snprintf(NULL, 0, f, field_width, precision, v);
-			if (! ensureCapacity(&str, len)) break;
-			sprintf(str.str+str.len, f, field_width, precision, v);
-			str.len+=len;
+			if (! strbuf_ensureCapacity(str, len)) break;
+			sprintf(str->str+str->len, f, field_width, precision, v);
+			str->len+=len;
 		} else
 		{
 			// Integer
@@ -266,31 +220,30 @@ parse_flags:
 			(*s)=0;
 			
 			int len=snprintf(NULL, 0, f, field_width, v);
-			if (! ensureCapacity(&str, len)) break;
-			sprintf(str.str+str.len, f, field_width, v);
-			str.len+=len;
+			if (! strbuf_ensureCapacity(str, len)) break;
+			sprintf(str->str+str->len, f, field_width, v);
+			str->len+=len;
 		}
 	}
 	
-	str.str[str.len]=0;
-	return str.str;
+	return str;
 }
 
 
 static void jsB_sprintf(js_State *J)
 {
-	char *s=internal_sprintf(J);
-	js_pushstring(J, s);
-	free(s);
+	strbuf_t *s=internal_sprintf(J);
+	js_pushstring(J, s->str);
+	strbuf_delete(s);
 }
 
 
 static void jsB_printf(js_State *J)
 {
-	char *s=internal_sprintf(J);
-	fputs(s, stdout);
+	strbuf_t *s=internal_sprintf(J);
+	fputs(s->str, stdout);
+	strbuf_delete(s);
 	fflush(stdout);
-	free(s);
 	js_pushundefined(J);
 }
 

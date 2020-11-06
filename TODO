@@ -6,6 +6,7 @@
 - pipe
 - exec(["ls", "-la" ], stdin, stdout, stderr);
 - pipe( stdin, [ "ls", "-la" ], [ "grep", ".sh" ], stdout, stderr);
+- read use strbuf
 
 
 + cd

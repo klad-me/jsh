@@ -1,12 +1,9 @@
 - cp
 - mv
 - rm recursively
-- printf, sprintf
 - append, appendBinary
 - exec
 - pipe
-- code from command line
-- wait pid for specified time
 - exec(["ls", "-la" ], stdin, stdout, stderr);
 - pipe( stdin, [ "ls", "-la" ], [ "grep", ".sh" ], stdout, stderr);
 
@@ -22,3 +19,6 @@
 	wait
 	kill
 + sleep
++ checkpid
++ code from command line
++ printf, sprintf

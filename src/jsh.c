@@ -9,7 +9,7 @@
 char jsh_exceptions=1;
 
 
-static int runScript(js_State *J, const char *fname)
+static int runFile(js_State *J, const char *fname)
 {
 	if (js_try(J))
 	{
@@ -18,6 +18,26 @@ static int runScript(js_State *J, const char *fname)
 		return -1;
 	}
 	js_loadfile(J, fname);
+	js_pushundefined(J);
+	js_call(J, 0);
+	int ret=0;
+	if (js_isnumber(J, -1)) ret=js_tonumber(J, -1);
+	js_pop(J, 1);
+	js_endtry(J);
+	
+	return ret;
+}
+
+
+static int runScript(js_State *J, const char *script)
+{
+	if (js_try(J))
+	{
+		js_report(J, js_trystring(J, -1, "Error"));
+		js_pop(J, 1);
+		return -1;
+	}
+	js_loadstring(J, "[commandLine]", script);
 	js_pushundefined(J);
 	js_call(J, 0);
 	int ret=0;
@@ -43,10 +63,12 @@ static void jsB_exceptions(js_State *J)
 
 int main(int argc, char **argv)
 {
+	int ret;
+	
 	// Checking command line
 	if (argc < 2)
 	{
-		fprintf(stderr, "Usage: %s <script.js> [args]\n", argv[0]);
+		fprintf(stderr, "Usage: %s <script.js/code> [args]\n", argv[0]);
 		return -1;
 	}
 	
@@ -78,8 +100,18 @@ int main(int argc, char **argv)
 	// Creating library
 	initLibrary(J);
 	
-	// Starting script
-	int ret=runScript(J, argv[1]);
+	// Checking if script is a file
+	FILE *f=fopen(argv[1], "r");
+	if (f)
+	{
+		// It's a file
+		fclose(f);
+		ret=runFile(J, argv[1]);
+	} else
+	{
+		// It's a script
+		ret=runScript(J, argv[1]);
+	}
 	
 	// Deleting JS engine
 	js_freestate(J);

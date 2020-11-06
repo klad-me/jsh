@@ -285,9 +285,9 @@ Returns: _pid_ of new process.
 
 
 
-fg(pid)
-~~~~~~~
-Move background process _pid_ to foreground (wait for a process to exit).
+wait(pid)
+~~~~~~~~~
+Wait for process _pid_ to exit.
 
 Arguments:
 [options="header",cols="1,1,1,1,10"]

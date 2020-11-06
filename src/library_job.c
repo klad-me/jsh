@@ -39,10 +39,10 @@ static void jsB_bg(js_State *J)
 }
 
 
-static void jsB_fg(js_State *J)
+static void jsB_wait(js_State *J)
 {
 	if (! js_isnumber(J, 1))
-		js_error(J, "bad fg() arguments");
+		js_error(J, "bad wait() arguments");
 	int status;
 	if (waitpid(js_tonumber(J, 1), &status, 0) < 0) status=-1;
 	js_pushnumber(J, WEXITSTATUS(status));
@@ -111,8 +111,8 @@ void initLibrary_job(js_State *J)
 	js_newcfunction(J, jsB_bg, "bg", 1);
 	js_setglobal(J, "bg");
 	
-	js_newcfunction(J, jsB_fg, "fg", 1);
-	js_setglobal(J, "fg");
+	js_newcfunction(J, jsB_wait, "wait", 1);
+	js_setglobal(J, "wait");
 	
 	js_newcfunction(J, jsB_kill, "kill", 1);
 	js_setglobal(J, "kill");

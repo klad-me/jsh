@@ -6,6 +6,9 @@
 - exec
 - pipe
 - code from command line
+- wait pid for specified time
+- exec(["ls", "-la" ], stdin, stdout, stderr);
+- pipe( stdin, [ "ls", "-la" ], [ "grep", ".sh" ], stdout, stderr);
 
 
 + cd
@@ -16,6 +19,6 @@
 + env
 + fork and exec function
 	bg
-	fg
+	wait
 	kill
 + sleep

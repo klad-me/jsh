@@ -14,12 +14,25 @@
 #include "utf8_assembly.h"
 
 
+static char** execArgs(js_State *J, int arg)
+{
+	int n=js_getlength(J, arg), i;
+	char* *args=(char**)malloc(sizeof(char*) * (n+1));
+	for (i=0; i<n; i++)
+	{
+		js_getindex(J, arg, i);
+		args[i]=strdup(js_tostring(J, -1));
+		js_pop(J, 1);
+	}
+	args[n]=0;
+	return args;
+}
+
+
 static void jsB_exec(js_State *J)
 {
-	int in_arg=-1, out_arg=-1, err_arg=-1, exec_arg=-1;
+	int in_arg=-1, out_arg=-1, err_arg=-1, n_exec_args=0;
 	int i, top=js_gettop(J);
-	char *exe=0;
-	char* *args=0;
 	pid_t pid;
 	
 	// Looking for arguments
@@ -27,12 +40,25 @@ static void jsB_exec(js_State *J)
 	{
 		if (js_isarray(J, i))
 		{
-			if (exec_arg < 0)
-				exec_arg=i; else
-				js_error(J, "bad exec() arguments");
+			n_exec_args++;
+			
+			int n=js_getlength(J, i), j;
+			if (n < 1) js_error(J, "bad exec() arguments");
+			
+			for (j=0; j<n; j++)
+			{
+				js_getindex(J, i, j);
+				if (! js_isstring(J, -1))
+				{
+					js_pop(J, 1);
+					js_error(J, "bad exec() arguments");
+				}
+				js_pop(J, 1);
+			}
 		} else
 		if ( (js_iscallable(J, i)) ||
 			 (js_isnull(J, i)) ||
+			 (js_isundefined(J, i)) ||
 			 (js_isstring(J, i)) )
 		{
 			if (in_arg < 0)
@@ -48,74 +74,126 @@ static void jsB_exec(js_State *J)
 		}
 	}
 	
-	if (exec_arg < 0)
+	if (n_exec_args == 0)
 		js_error(J, "bad exec() arguments");
-	
-	if ( (in_arg > 0) && (js_isnull(J, in_arg)) )
-		in_arg=-1;
-	
-	
-	// Getting exec arguments
-	int n_args=js_getlength(J, exec_arg);
-	if (n_args < 1)
-		js_error(J, "bad exec() arguments");
-	
-	args=(char**)malloc(sizeof(char*) * (n_args+1));
-	for (i=0; i<n_args; i++)
-	{
-		js_getindex(J, exec_arg, i);
-		args[i]=strdup(js_tostring(J, -1));
-		js_pop(J, 1);
-	}
-	args[n_args]=0;
 	
 	
 	// Creating pipes
 	int fd_in[2], fd_out[2], fd_err[2];
+	pipe(fd_in);
+	pipe(fd_out);
+	pipe(fd_err);
 	
-	if (in_arg > 0) pipe(fd_in);
-	if (out_arg > 0) pipe(fd_out);
-	if (err_arg > 0) pipe(fd_err);
+	// Assigning stdin
+	if ( (in_arg < 0) || (js_isundefined(J, in_arg)) )
+	{
+		in_arg=-1;
+		dup2(0, fd_in[0]);
+	}
+	
+	// Assigning stdout
+	if ( (out_arg < 0) || (js_isundefined(J, out_arg)) )
+	{
+		out_arg=-1;
+		dup2(1, fd_out[1]);
+	}
+	
+	// Assigning stderr
+	if ( (err_arg < 0) || (js_isundefined(J, err_arg)) )
+	{
+		err_arg=-1;
+		dup2(2, fd_err[1]);
+	}
 	
 	
 	// Creating subprocess
 	pid=fork();
 	if (pid < 0)
 	{
-		for (i=0; i<n_args; i++)
-			free(args[i]);
-		free(args);
-		
 		js_error(J, "fork: %s", strerror(errno));
 	} else
 	if (pid == 0)
 	{
 		// Child process
+		int n;
 		
-		// Reassign stdin, stdout and stderr
-		if (in_arg > 0)
+		// Closing unused pipe ends
+		close(fd_out[0]);
+		close(fd_err[0]);
+		
+		// Assigning stderr common for all processes
+		dup2(fd_err[1], 2);
+		
+		// Waking though all exec arguments
+		n=0;
+		for (i=1; i<top; i++)
 		{
-			dup2(fd_in[0],  0);
-			close(fd_in[1]);
+			if (! js_isarray(J, i)) continue;
+			
+			n++;
+			if (n < n_exec_args)
+			{
+				// Not the last one
+				
+				// Creating pipe for stdout -> next stdin
+				int fd_io[2];
+				pipe(fd_io);
+				
+				pid=fork();
+				if (pid == 0)
+				{
+					// Child process
+					
+					// Assigning stdin and stdout
+					dup2(fd_in[0],  0);
+					close(fd_in[1]);
+					
+					dup2(fd_io[1], 1);
+					close(fd_io[0]);
+					
+					char **args=execArgs(J, i);
+					
+					// Starting process
+					execvp(args[0], args);
+					
+					// Return mean exec() error
+					perror(args[0]);
+					exit(-1);
+				} else
+				{
+					// Calling process
+					
+					// Closing old stdin
+					close(fd_in[0]);
+					close(fd_in[1]);
+					
+					// Moving fd_io to next process' fd_in
+					fd_in[0]=fd_io[0];
+					fd_in[1]=fd_io[1];
+				}
+			} else
+			{
+				// The last one
+				
+				// Assigning stdin and stdout
+				dup2(fd_in[0],  0);
+				close(fd_in[1]);
+				
+				dup2(fd_out[1], 1);
+				close(fd_out[0]);
+				
+				char **args=execArgs(J, i);
+				
+				// Starting process
+				execvp(args[0], args);
+				
+				// Return mean exec() error
+				perror(args[0]);
+				exit(-1);
+			}
 		}
 		
-		if (out_arg > 0)
-		{
-			dup2(fd_out[1], 1);
-			close(fd_out[0]);
-		}
-		
-		if (err_arg > 0)
-		{
-			dup2(fd_err[1], 2);
-			close(fd_err[0]);
-		}
-		
-		// Starting process
-		execvp(args[0], args);
-		
-		// Return mean exec() error
-		perror(exe);
+		// Will not reach here
 		exit(-1);
 	} else
 	{
@@ -127,25 +205,28 @@ static void jsB_exec(js_State *J)
 		strbuf_t *stdout_buf=0, *stderr_buf=0;
 		
 		// Closing unused FDs
-		if (in_arg > 0) close(fd_in[0]);
-		if (out_arg > 0) close(fd_out[1]);
-		if (err_arg > 0) close(fd_err[1]);
-		
-		// Free unused args
-		for (i=0; i<n_args; i++)
-			free(args[i]);
-		free(args);
+		close(fd_in[0]);
+		close(fd_out[1]);
+		close(fd_err[1]);
 		
 		utf8_stdout.len=0;
 		utf8_stderr.len=0;
 		
-		// Checking if stdin is a string
-		if ( (in_arg > 0) && (js_isstring(J, in_arg)) )
+		// Checking if stdin is a string or null
+		if (in_arg > 0)
 		{
-			unsent_stdin=strdup(js_tostring(J, in_arg));
-			unsent_stdin_pos=0;
-			unsent_stdin_len=strlen(unsent_stdin);
-			in_arg=-1;
+			if (js_isstring(J, in_arg))
+			{
+				unsent_stdin=strdup(js_tostring(J, in_arg));
+				unsent_stdin_pos=0;
+				unsent_stdin_len=strlen(unsent_stdin);
+				in_arg=-1;
+			} else
+			if (js_isnull(J, in_arg))
+			{
+				close(fd_in[1]);
+				in_arg=-1;
+			}
 		}
 		
 		// Checking if stdout or stderr is string => collect output to string
@@ -265,6 +346,10 @@ static void jsB_exec(js_State *J)
 							unsent_stdin=0;
 						}
 					}
+					
+					// Closing stdin if there is nothing to send
+					if ( (! unsent_stdin) && (in_arg < 0) )
+						close(fd_in[1]);
 				}
 			}
 			

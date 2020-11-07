@@ -133,6 +133,87 @@ C-style printf() function.
 Shell functions
 ---------------
 
+
+exec(mixed)
+~~~~~~~~~~~
+Executes one or more (piped) programs and waits them to finish.
+
+Arguments may be mixed almost in any order.
+
+Arguments with type _Array of strings_ are programs to execute. _[0]_ is a program to execute. _[1]..[n]_ are arguments.
+
+_stdin_ is passed to first executable.
+
+_stdout_ is read from last executable.
+
+_stderr_ is common for all executables.
+
+Executables connected to each other using pipes.
+
+----------
+SCRIPT stdin       stderr <--+  stdout
+         |                   |    ^
+         v                   |    |
+Task1  stdin stdout stderr --+    |
+               |             |    |
+         +-----+             |    |
+         |                   |    |
+         v                   |    |
+Task2  stdin stdout stderr --+    |
+               |             |    |
+         +-----+             |    |
+...                        --+    |
+         |                   |    |
+         v                   |    |
+TaskN  stdin stdout stderr --+    |
+               |                  |
+               +------------------+
+----------
+
+Arguments with type _undefined/null/String/Function_ are used as stdin, stdout and stderr, depending on order.
+
+[options="header",cols="2,1,10"]
+|=========
+| Argument type		| Required	| Description
+| Array of strings	| YES		| One or more executables
+| undefined			| NO		| Use script's default stdin/stdout/stderr
+| null				| NO		| For stdin - empty input, for stdout/stderr - suppress output
+| String			| NO		| For stdin - input text, for stdout/stderr - signal to collect output to string (see later)
+| Function			| NO		| Use callback
+|=========
+
+Returns object with execution result.
+[options="header",cols="1,1,10"]
+|=========
+| Key		| Type		| Description
+| status	| Number	| Status code of execution (for last called executable)
+| stdout	| String	| Output text if _String_ is used as stdout
+| stderr	| String	| Output error text if _String_ is used as stderr
+|=========
+
+Examples:
+
+Run _grep_ using script's stdin and stdout (console):
+----------
+exec( ["grep"] );
+=> { "status": 0 }
+----------
+
+Run _grep_ using script's stdin and collect it's stdout and stderr to String:
+----------
+exec(undefined, ["grep"], "", "");
+=> { "status": 0, "stdout": "...", "stderr": "..." }
+----------
+
+Run _ls_ and _grep_ using pipes:
+----------
+exec( ["ls", "-la"], ["grep", "tmp"] );
+=> { "status": 0 }
+----------
+
+
+
+
 env(var)
 ~~~~~~~~
 Returns value of environment variable _var_ or object with environment variables in form of key => value if _var_ is undefined.

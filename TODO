@@ -2,8 +2,10 @@
 - mv
 - rm recursively
 - append, appendBinary
-- make exec work like pipe( stdin, [ "ls", "-la" ], [ "grep", ".sh" ], stdout, stderr);
 - interactive shell
+- exec doc
+	stdin cb
+	stdout/stderr cb
 
 
 + cd
@@ -23,3 +25,4 @@
 + utf8_assembly as module
 + read use strbuf
 + exec(["ls", "-la" ], stdin, stdout, stderr);
++ make exec work like pipe( stdin, [ "ls", "-la" ], [ "grep", ".sh" ], stdout, stderr);

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+#include "strbuf.h"
 
 
 static void internal_print(js_State *J)
@@ -37,11 +38,8 @@ static void jsB_echo(js_State *J)
 
 static void jsB_read(js_State *J)
 {
-#define READ_MAX_SIZE	65536
-#define READ_BLOCK		256
 	int timeout=0;
-	int str_size=READ_BLOCK, str_len=0;
-	char *str=(char*)malloc(READ_BLOCK);
+	strbuf_t *str=strbuf_new();
 	
 	if (! str) js_error(J, "out of memory");
 	
@@ -70,10 +68,7 @@ static void jsB_read(js_State *J)
 		if (rt < 0) goto error;
 		if ( (rt == 0) && (timeout > 0) )
 		{
-			str[str_len]=0;
-			js_pushstring(J, str);
-			free(str);
-			return;
+			goto done;
 		} else
 		if (rt > 0)
 		{
@@ -85,42 +80,30 @@ static void jsB_read(js_State *J)
 			
 			while (n_read--)
 			{
-				if (str_len == str_size-1)
-				{
-					str_size+=READ_BLOCK;
-					if (str_size > READ_MAX_SIZE) goto error;
-					char *new_str=(char*)realloc(str, str_size);
-					if (! new_str) goto error;
-					str=new_str;
-				}
-				
 				if (read(0, &c, 1) != 1) goto eof;
 				
-				str[str_len++]=c;
+				if (! strbuf_appendChar(str, c)) goto error;
 				if (c == '\n') goto done;
 			}
 		}
 	}
 	
 error:
-	free(str);
+	strbuf_delete(str);
 	js_error(J, "read() failed");
 	return;
 	
 eof:
-	if (str_len == 0)
+	if (str->len == 0)
 	{
 		js_pushnull(J);
-		free(str);
+		strbuf_delete(str);
 		return;
 	}
 	
 done:
-	str[str_len]=0;
-	js_pushstring(J, str);
-	free(str);
-	return;
-	
+	js_pushstring(J, str->str);
+	strbuf_delete(str);
 }
 
 

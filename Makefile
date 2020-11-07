@@ -17,6 +17,7 @@ C_SOURCES+= \
 	src/library_printf.c	\
 	src/library_exec.c		\
 	src/strbuf.c			\
+	src/utf8_assembly.c		\
 	mujs.git/one.c
 
 ##############################################################################

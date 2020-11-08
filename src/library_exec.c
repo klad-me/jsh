@@ -33,7 +33,6 @@ static void jsB_exec(js_State *J)
 {
 	int in_arg=-1, out_arg=-1, err_arg=-1, n_exec_args=0;
 	int i, top=js_gettop(J);
-	pid_t pid;
 	
 	// Looking for arguments
 	for (i=1; i<top; i++)
@@ -78,24 +77,18 @@ static void jsB_exec(js_State *J)
 		js_error(J, "bad exec() arguments");
 	
 	
-	// Creating pipes
-	int fd_in[2], fd_out[2], fd_err[2];
+	// Creating pipes (fd_out will create later)
+	int fd_in[2], fd_out[2], fd_err[2], fd_io[2];
 	pipe(fd_in);
-	pipe(fd_out);
 	pipe(fd_err);
+	fd_io[0]=fd_in[0];
+	fd_io[1]=fd_in[1];
 	
 	// Assigning stdin
 	if ( (in_arg < 0) || (js_isundefined(J, in_arg)) )
 	{
 		in_arg=-1;
 		dup2(0, fd_in[0]);
-	}
-	
-	// Assigning stdout
-	if ( (out_arg < 0) || (js_isundefined(J, out_arg)) )
-	{
-		out_arg=-1;
-		dup2(1, fd_out[1]);
 	}
 	
 	// Assigning stderr
@@ -106,96 +99,69 @@ static void jsB_exec(js_State *J)
 	}
 	
 	
-	// Creating subprocess
-	pid=fork();
-	if (pid < 0)
+	// Creating all subprocesses
+	pid_t pids[n_exec_args];
+	int n=0;
+	for (i=1; i<top; i++)
 	{
-		js_error(J, "fork: %s", strerror(errno));
-	} else
-	if (pid == 0)
-	{
-		// Child process
-		int n;
+		if (! js_isarray(J, i)) continue;
 		
-		// Closing unused pipe ends
-		close(fd_out[0]);
-		close(fd_err[0]);
-		
-		// Assigning stderr common for all processes
-		dup2(fd_err[1], 2);
-		
-		// Waking though all exec arguments
-		n=0;
-		for (i=1; i<top; i++)
+		// Creating pipe for process' stdout
+		pipe(fd_out);
+		if (n == n_exec_args-1)
 		{
-			if (! js_isarray(J, i)) continue;
-			
-			n++;
-			if (n < n_exec_args)
+			// Last process
+			if ( (out_arg < 0) || (js_isundefined(J, out_arg)) )
 			{
-				// Not the last one
-				
-				// Creating pipe for stdout -> next stdin
-				int fd_io[2];
-				pipe(fd_io);
-				
-				pid=fork();
-				if (pid == 0)
-				{
-					// Child process
-					
-					// Assigning stdin and stdout
-					dup2(fd_in[0],  0);
-					close(fd_in[1]);
-					
-					dup2(fd_io[1], 1);
-					close(fd_io[0]);
-					
-					char **args=execArgs(J, i);
-					
-					// Starting process
-					execvp(args[0], args);
-					
-					// Return mean exec() error
-					perror(args[0]);
-					exit(-1);
-				} else
-				{
-					// Calling process
-					
-					// Closing old stdin
-					close(fd_in[0]);
-					close(fd_in[1]);
-					
-					// Moving fd_io to next process' fd_in
-					fd_in[0]=fd_io[0];
-					fd_in[1]=fd_io[1];
-				}
-			} else
-			{
-				// The last one
-				
-				// Assigning stdin and stdout
-				dup2(fd_in[0],  0);
-				close(fd_in[1]);
-				
-				dup2(fd_out[1], 1);
-				close(fd_out[0]);
-				
-				char **args=execArgs(J, i);
-				
-				// Starting process
-				execvp(args[0], args);
-				
-				// Return mean exec() error
-				perror(args[0]);
-				exit(-1);
+				// Use default stdout
+				out_arg=-1;
+				dup2(1, fd_out[1]);
 			}
 		}
 		
-		// Will not reach here
-		exit(-1);
-	} else
+		// Creating process
+		if ((pids[n]=fork()) == 0)
+		{
+			// Child process
+			
+			// Assigning stdin, stdout and stderr
+			dup2(fd_io[0],  0);
+			close(fd_io[1]);
+			
+			dup2(fd_out[1], 1);
+			close(fd_out[0]);
+			
+			dup2(fd_err[1], 2);
+			close(fd_err[0]);
+			
+			char **args=execArgs(J, i);
+			
+			// Starting process
+			execvp(args[0], args);
+			
+			// Return mean exec() error
+			perror(args[0]);
+			exit(-1);
+		} else
+		{
+			// Calling process
+			
+			// Closing old stdin
+			if (n > 0)
+			{
+				close(fd_io[0]);
+				close(fd_io[1]);
+			}
+			
+			// Moving fd_out to next process' fd_in
+			fd_io[0]=fd_out[0];
+			fd_io[1]=fd_out[1];
+		}
+		
+		n++;
+	}
+	
+	
 	{
 		// Main process
 		char *unsent_stdin=0;
@@ -444,9 +410,19 @@ static void jsB_exec(js_State *J)
 			}
 		}
 		
-		// Waiting for child process to exit
+		// Waiting for all child processes to exit
 		int status;
-		waitpid(pid, &status, 0);
+		for (i=0; i<n_exec_args; i++)
+		{
+			close(fd_in[0]);
+			close(fd_in[1]);
+			close(fd_out[0]);
+			close(fd_out[1]);
+			close(fd_err[0]);
+			close(fd_err[1]);
+			printf("wait %d\n", pids[i]);
+			waitpid(pids[i], &status, 0);
+		}
 		
 		// Creating result
 		js_newobject(J);

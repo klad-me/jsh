@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 #include <errno.h>
 
 #include "strbuf.h"
@@ -126,17 +127,20 @@ static void jsB_exec(js_State *J)
 			
 			// Assigning stdin, stdout and stderr
 			dup2(fd_io[0],  0);
-			close(fd_io[1]);
-			
 			dup2(fd_out[1], 1);
-			close(fd_out[0]);
-			
 			dup2(fd_err[1], 2);
-			close(fd_err[0]);
 			
-			char **args=execArgs(J, i);
+			// Closing all open fd's except stdin, stdout and stderr
+			struct rlimit flim;
+			getrlimit(RLIMIT_NOFILE, &flim);
+			int fd;
+			for (fd=3; fd<flim.rlim_max; fd++)
+			{
+				close(fd);
+			}
 			
 			// Starting process
+			char **args=execArgs(J, i);
 			execvp(args[0], args);
 			
 			// Return mean exec() error
@@ -315,7 +319,9 @@ static void jsB_exec(js_State *J)
 					
 					// Closing stdin if there is nothing to send
 					if ( (! unsent_stdin) && (in_arg < 0) )
+					{
 						close(fd_in[1]);
+					}
 				}
 			}
 			
@@ -410,17 +416,15 @@ static void jsB_exec(js_State *J)
 			}
 		}
 		
+		// Closing stdin
+		close(fd_in[1]);
+		close(fd_out[0]);
+		close(fd_err[0]);
+		
 		// Waiting for all child processes to exit
 		int status;
 		for (i=0; i<n_exec_args; i++)
 		{
-			close(fd_in[0]);
-			close(fd_in[1]);
-			close(fd_out[0]);
-			close(fd_out[1]);
-			close(fd_err[0]);
-			close(fd_err[1]);
-			printf("wait %d\n", pids[i]);
 			waitpid(pids[i], &status, 0);
 		}
 		

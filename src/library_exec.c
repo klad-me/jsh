@@ -131,13 +131,14 @@ static void jsB_exec(js_State *J)
 			dup2(fd_err[1], 2);
 			
 			// Closing all open fd's except stdin, stdout and stderr
-			struct rlimit flim;
-			getrlimit(RLIMIT_NOFILE, &flim);
-			int fd;
-			for (fd=3; fd<flim.rlim_max; fd++)
-			{
-				close(fd);
-			}
+			close(fd_io[1]);
+			close(fd_out[0]);
+			close(fd_err[0]);
+			
+			close(fd_in[0]);
+			close(fd_in[1]);
+			close(fd_err[0]);
+			close(fd_err[1]);
 			
 			// Starting process
 			char **args=execArgs(J, i);

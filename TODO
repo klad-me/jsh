@@ -2,7 +2,6 @@
 - mv
 - rm recursively
 - append, appendBinary
-- interactive shell
 - exec doc
 	stdin cb
 	stdout/stderr cb
@@ -26,3 +25,4 @@
 + read use strbuf
 + exec(["ls", "-la" ], stdin, stdout, stderr);
 + make exec work like pipe( stdin, [ "ls", "-la" ], [ "grep", ".sh" ], stdout, stderr);
++ interactive shell

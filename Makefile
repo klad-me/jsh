@@ -47,7 +47,7 @@ STRIP?=$(CROSS_COMPILE)strip
 INCLUDES=-Isrc -Imujs.git
 DEFINES=
 CFLAGS=-Wall -Wstrict-prototypes -Wshadow -Os -fmerge-all-constants -g $(INCLUDES) $(DEFINES)
-LIBS=-lm
+LIBS=-lm -lreadline
 LDFLAGS=$(LIBS) -Wl,--relax,--gc-sections
 ##############################################################################
 

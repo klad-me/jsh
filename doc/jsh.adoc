@@ -492,8 +492,8 @@ On error raises exception or returns _null_.
 
 
 
-file.write(filename, text)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+file.write(filename, text, append)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Writes text from string to file.
 
 Arguments:
@@ -502,6 +502,7 @@ Arguments:
 | Argument	| Type		| Required	| Default	| Description
 | filename	| String	| YES		| 			| File to write
 | text		| String	| YES		|			| Text to write
+| append	| Boolean	| NO		| false		| Append instead or rewrite file
 |=========
 
 On error raises exception or returns _false_.
@@ -509,8 +510,8 @@ On error raises exception or returns _false_.
 
 
 
-file.writeBinary(filename, array)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+file.writeBinary(filename, array, append)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Writes binary data from byte array to file (see file.read).
 
 Arguments:
@@ -519,6 +520,7 @@ Arguments:
 | Argument	| Type		| Required	| Default	| Description
 | filename	| String	| YES		| 			| File to write
 | array		| Number[]	| YES		|			| Data to write
+| append	| Boolean	| NO		| false		| Append instead or rewrite file
 |=========
 
 On error raises exception or returns _false_.

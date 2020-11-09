@@ -160,11 +160,13 @@ static void jsB_write(js_State *J)
 		js_error(J, "bad write() arguments");
 	}
 	
+	int append=(js_isboolean(J, 3) && js_toboolean(J, 3));
+	
 	const char *filename = js_tostring(J, 1);
 	const char *s = js_tostring(J, 2);
 	size_t n = strlen(s);
 	
-	FILE *f=fopen(filename, "wb");
+	FILE *f=fopen(filename, append ? "ab" : "wb");
 	if (!f)
 	{
 		if (jsh_exceptions)
@@ -197,6 +199,8 @@ static void jsB_writeBinary(js_State *J)
 		js_error(J, "bad writeBinary() arguments");
 	}
 	
+	int append=(js_isboolean(J, 3) && js_toboolean(J, 3));
+	
 	const char *filename = js_tostring(J, 1);
 	size_t n = js_getlength(J, 2);
 	
@@ -213,7 +217,7 @@ static void jsB_writeBinary(js_State *J)
 		js_pop(J, 1);
 	}
 	
-	FILE *f=fopen(filename, "wb");
+	FILE *f=fopen(filename, append ? "ab" : "wb");
 	if (!f)
 	{
 		if (jsh_exceptions)

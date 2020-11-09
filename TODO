@@ -1,7 +1,6 @@
 - cp
 - mv
 - rm recursively
-- append, appendBinary
 
 
 + cd
@@ -26,3 +25,4 @@
 + exec doc
 	stdin cb
 	stdout/stderr cb
++ append, appendBinary

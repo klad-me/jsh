@@ -182,6 +182,12 @@ Arguments with type _undefined/null/String/Function_ are used as stdin, stdout a
 | Function			| NO		| Use callback
 |=========
 
+_stdin_ callback must return string or _null_ on end of input. If string is empty, stdin paused till stdout has a data.
+
+_stdout_ and _stderr_ callback must get one string argument
+
+NOTE: output _is not_ splitted to lines !
+
 Returns object with execution result.
 [options="header",cols="1,1,10"]
 |=========

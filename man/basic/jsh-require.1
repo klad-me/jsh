@@ -1,0 +1,57 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-require 1 "2020-11-10" "0.1" "require() function"
+
+
+.SH NAME
+require() \- returns module instance by name and loads it if necessary
+
+
+.SH SYNOPSIS
+.TP
+.I require(name)
+Loads module (named as name.js) once and returns instance to it's
+.B exports
+object.
+.sp
+Module should fill passed
+.B exports
+object with their own properties.
+
+.SH ARGUMENTS
+.TP
+.I name :String
+module name (without .js suffix)
+
+.SH RETURNS
+Module instance.
+
+.SH EXAMPLES
+.TP
+.I use require() multiple times for one module
+.nf
+.eo
+# jsh 'for (var i=0; i<3; i++) require("module").foo();'
+Hello from module.js
+bar
+bar
+bar
+.ec
+.fi
+.TP
+.I module.js contents
+.nf
+.eo
+echo("Hello from module.js");
+exports.foo=function() { echo("bar"); };
+.ec
+.fi
+
+.SH SEE ALSO
+jsh-load(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

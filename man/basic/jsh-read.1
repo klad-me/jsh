@@ -1,0 +1,61 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-read 1 "2020-11-10" "0.1" "read() function"
+
+
+.SH NAME
+read() \- reads string from stdin
+
+
+.SH SYNOPSIS
+.TP
+.I read(timeout)
+Reads string from stdin with optional timed waiting.
+
+.SH ARGUMENTS
+.TP
+.I timeout :Number (optional)
+Timeout in seconds to wait for input, 0 for infinity (supports fractions)
+
+.SH RETURNS
+.TP
+.I String with trailing '\en'
+on success
+.TP
+.I String without trailing '\en'
+on timeout
+.TP
+.I null
+on end-of-input.
+
+.SH NOTES
+.I timeout
+specifies maximum time to wait for next character, not the whole line. On timeout read() returns partially read string or '' if nothing was read.
+Then the string is fully read, it contains '\en' ending character.
+
+
+.SH EXAMPLES
+.TP
+.I read line
+.nf
+.eo
+# jsh 'echo("you typed "+read());'
+hello
+you typed hello
+<empty line>
+.ec
+.fi
+.TP
+.I read line with timeout
+.nf
+.eo
+# jsh 'echo("you typed "+read(1));'
+you typed 
+.ec
+.fi
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

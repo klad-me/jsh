@@ -1,0 +1,50 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-printf 1 "2020-11-10" "0.1" "printf() function"
+
+
+.SH NAME
+printf() \- prints formatted string to console
+
+
+.SH SYNOPSIS
+.TP
+.I printf(format, ...)
+Prints C-style formatted string to console.
+
+.SH ARGUMENTS
+.TP
+.I format :String
+C-style format string
+.TP
+.I argN
+optional argument (depending on format)
+
+.SH RETURNS
+undefined
+
+.SH FORMAT STRING
+The format string consists on characters copied unmodified from format to output and special formatting directives starting with
+.B %
+sign.
+.br
+Format is completely the same as for sprintf(3).
+
+.SH EXAMPLES
+.TP
+.I prints formatted text
+.nf
+.eo
+# jsh 'printf("Int %05d Float %.3f\n", 123.45, 123.45);'
+Int 00123 Float 123.450
+.ec
+.fi
+
+.SH SEE ALSO
+jsh-sprintf(1) jsh-print(1) sprintf(3)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

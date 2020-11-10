@@ -1,0 +1,44 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-echo 1 "2020-11-10" "0.1" "echo() function"
+
+
+.SH NAME
+echo() \- prints text to console
+
+
+.SH SYNOPSIS
+.TP
+.I echo(...)
+Prints any number of String arguments to console
+.B with
+trailing newline after last argument.
+
+.SH ARGUMENTS
+.TP
+.I stringN :String
+text to print
+
+.SH RETURNS
+undefined
+
+.SH EXAMPLES
+.TP
+.I prints some text
+.nf
+.eo
+# jsh 'echo("one ", "two "); echo("three\n");'
+one two 
+three
+<empty line>
+.ec
+.fi
+
+.SH SEE ALSO
+jsh-print(1) jsh-printf(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

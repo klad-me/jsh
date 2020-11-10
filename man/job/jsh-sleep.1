@@ -1,0 +1,38 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-sleep 1 "2020-11-10" "0.1" "sleep() function"
+
+
+.SH NAME
+sleep() \- suspends script execution
+
+
+.SH SYNOPSIS
+.TP
+.I sleep(time)
+Suspends script execution for a specified time.
+
+.SH ARGUMENTS
+.TP
+.I time :Number
+Time to wait in seconds (fractions allowed)
+
+.SH RETURNS
+undefined
+
+.SH EXAMPLES
+.TP
+.I displays date and time twice with 5 seconds delay
+.nf
+.eo
+jsh 'exec(["date"]); sleep(5); exec(["date"]);'
+Tue Nov 10 16:59:59 MSK 2020
+Tue Nov 10 17:00:04 MSK 2020
+.ec
+.fi
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

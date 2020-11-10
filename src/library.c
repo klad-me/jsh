@@ -20,15 +20,16 @@ static const unsigned char js_init[]={
 
 static void jsB_load(js_State *J)
 {
-	int i, n = js_gettop(J);
-	for (i = 1; i < n; ++i)
+	int i, n=js_gettop(J)-1;
+	for (i=0; i<n; i++)
 	{
-		js_loadfile(J, js_tostring(J, i));
+		js_loadfile(J, js_tostring(J, 1+i));
 		js_pushundefined(J);
 		js_call(J, 0);
-		js_pop(J, 1);
+		if (i < n-1) js_pop(J, 1);
 	}
-	js_pushundefined(J);
+	if (n == 0)
+		js_pushundefined(J);
 }
 
 

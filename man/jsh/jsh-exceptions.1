@@ -1,0 +1,62 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-exceptions 1 "2020-11-10" "0.1" "jsh.exceptions() function"
+
+
+.SH NAME
+jsh.exceptions() \- controls exception for shell commands
+
+
+.SH SYNOPSIS
+.TP
+.I jsh.exceptions(on) :Boolean
+Controls exceptions of shell functions. If
+.B true
+(default) shell functions will throw exceptions on error, like cd() to non-existing directory.
+If
+.B false
+shell functions will return
+.B false
+or
+.B -1
+(depending on calling function) on error.
+
+.SH ARGUMENTS
+.TP
+.I on :Boolean
+new value for controlling exceptions
+
+.SH RETURNS
+.TP
+.I Boolean
+previous set value
+
+.SH EXAMPLES
+.TP
+.I exceptions on
+.nf
+.eo
+# jsh 'jsh.exceptions(true); echo(cd("/foobar"));'
+Error: No such file or directory
+	at cd (native)
+	at [commandLine]:1
+.ec
+.fi
+.TP
+.I exceptions off
+.nf
+.eo
+# jsh 'jsh.exceptions(false); echo(cd("/foobar"));'
+false
+.ec
+.fi
+
+
+.SH SEE ALSO
+jsh-shell(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

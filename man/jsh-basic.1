@@ -1,0 +1,45 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-basic 1 "2020-11-10" "0.1" "jsh basic library"
+
+
+.SH NAME
+jsh-basic \- jsh basic library functions
+
+
+.SH SYNOPSIS
+.TP
+.I exit(result)
+\- exits from script and returns specified exit code
+.TP
+.I load(...)
+\- loads and executes JavaScript source code from one or more files
+.TP
+.I require(name) :Object
+\- loads JavaScript module from file
+.I name.js
+and return pointer to it
+.TP
+.I print(...)
+\- prints any number of arguments to console (without trailing newline)
+.TP
+.I echo(...)
+\- prints any number of arguments to console (with trailing newline)
+.TP
+.I read([timeout]) :String
+\- reads string from console (with ability of timed waiting)
+.TP
+.I sprintf(format, ...) :String
+\- formats a string with arguments using C-style format
+.TP
+.I printf(format, ...) :String
+\- formats a string with arguments using C-style format and prints it to console
+
+.SH SEE ALSO
+jsh-exit(1) jsh-load(1) jsh-require(1) jsh-print(1) jsh-echo(1) jsh-read(1) jsh-sprintf(1) jsh-printf(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

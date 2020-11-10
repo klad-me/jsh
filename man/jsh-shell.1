@@ -1,0 +1,51 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-shell 1 "2020-11-10" "0.1" "jsh shell library"
+
+
+.SH NAME
+jsh-shell \- jsh shell library functions
+
+
+.SH SYNOPSIS
+.TP
+.I env() :Object
+\- returns current environment variables in pairs of key => value
+.TP
+.I env(var) :String
+\- returns value of specified environment variable
+.TP
+.I set(var, value)
+\- sets value of environment variable
+.TP
+.I unset(var)
+\- removes environment variable
+.TP
+.I pwd() :String
+\- return current working directory
+.TP
+.I cd(path) :Boolean
+\- changes current working directory
+.TP
+.I mkdir(path) :Boolean
+\- created empty directory
+.TP
+.I rmdir(path) :Boolean
+\- removes directory (directory should be empty)
+.TP
+.I stat(path) :Object
+\- returns file or directory information
+.TP
+.I ls(path, [listHidden]) :Object
+\- returns file list in specified directory and
+.B stat()
+information for each element
+
+.SH SEE ALSO
+jsh-env(1) jsh-set(1) jsh-unset(1) jsh-pwd(1) jsh-cd(1) jsh-mkdir(1) jsh-rmdir(1) jsh-stat(1) jsh-ls(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

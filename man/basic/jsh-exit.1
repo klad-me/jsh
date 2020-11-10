@@ -1,0 +1,45 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-exit 1 "2020-11-10" "0.1" "exit() function"
+
+
+.SH NAME
+exit() \- terminates execution of script
+
+
+.SH SYNOPSIS
+.TP
+.I exit(result)
+Terminates execution of script and (optionally) returns exit code.
+
+.SH ARGUMENTS
+.TP
+.I result :Number (optional)
+exit code (0 if not specified)
+
+.SH RETURNS
+This function never returns
+
+.SH EXAMPLES
+.TP
+.I exit with specified code
+.nf
+.eo
+# jsh 'exit(33)'; echo $?
+33
+.ec
+.fi
+.TP
+.I exit with default code
+.nf
+.eo
+# jsh 'exit()'; echo $?
+0
+.ec
+.fi
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

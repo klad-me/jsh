@@ -1,0 +1,81 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh 1 "2020-11-10" "0.1" "jsh man page"
+
+
+.SH NAME
+jsh \- JavaScript-based shell
+
+
+.SH SYNOPSIS
+.B jsh
+\- runs interactive shell
+.br
+.B jsh
+.I \-\-help
+\- displays usage
+.br
+.B jsh
+.I script.js [args]
+\- runs script from a file
+.br
+.B jsh
+.I js_code [args]
+\- runs script from command line
+.br
+
+.SH DESCRIPTION
+.B jsh
+is a lightweight JavaScript-based shell based on
+.I mujs.
+It implements ECMAScript as specified by ECMA-262.
+Additional library functions provides shell, job and file control.
+.sp
+Script is executed synchronous with waiting for IO operations to complete.
+.sp
+Script file can contain '#! jsh' in first line to create executable scripts.
+
+.SH OPTIONS
+Calling
+.B jsh
+without arguments starts interactive shell.
+.TP
+.I --help
+displays command line usage.
+.TP
+.I script.js [args]
+executes script from file
+.TP
+.I javascript_code [args]
+executes script from command line argument
+
+
+.SH CHARACTER ENCODING
+.B jsh
+uses
+.I UTF-8
+as encoding for everywhere.
+
+.SH SEE ALSO
+.TP
+.I jsh-jsh(1)
+.B jsh.
+object
+.TP
+.I jsh-basic(1)
+basic library functions
+.TP
+.I jsh-shell(1)
+shell library functions
+.TP
+.I jsh-job(1)
+job control library functions
+.TP
+.I jsh-file(1)
+file control library functions
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

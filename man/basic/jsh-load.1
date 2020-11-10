@@ -1,0 +1,49 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-load 1 "2020-11-10" "0.1" "load() function"
+
+
+.SH NAME
+load() \- executes script from file
+
+
+.SH SYNOPSIS
+.TP
+.I load(...)
+Executes scripts from one or more files and returns last result or last script.
+
+.SH ARGUMENTS
+.TP
+.I filenameN :String
+file name of script to execute
+
+.SH RETURNS
+Last result of last called script (as script is not a function !)
+
+.SH EXAMPLES
+.TP
+.I run script from file and get a result
+.nf
+.eo
+# jsh 'echo(load("test.js"))'
+Hello from test.js
+33
+.ec
+.fi
+.TP
+.I test.js contents
+.nf
+.eo
+echo("Hello from test.js");
+33;
+.ec
+.fi
+
+.SH SEE ALSO
+jsh-require(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

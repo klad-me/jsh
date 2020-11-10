@@ -1,0 +1,37 @@
+.\" Manpage for jsh
+.\" Author: me@klad.me
+.TH jsh-job 1 "2020-11-10" "0.1" "jsh job control library"
+
+
+.SH NAME
+jsh-job \- jsh job control library functions
+
+
+.SH SYNOPSIS
+.TP
+.I sleep(time)
+\- suspends jsh for specified time in seconds (fractions allowed)
+.TP
+.I exec(...) :Object
+\- executes one or more (piped) programs
+.TP
+.I bg(function) :Number
+\- executes specified function in background process (separete from calling jsh)
+.TP
+.I wait(pid) :Number
+\- waits for process to complete
+.TP
+.I checkpid(pid) :Number
+\- checks if process is working
+.TP
+.I kill(pid, [signal]) :Boolean
+\- sends process a signal
+
+.SH SEE ALSO
+jsh-sleep(1) jsh-exec(1) jsh-bg(1) jsh-wait(1) jsh-checkpid(1) jsh-kill(1)
+
+.SH AUTHOR
+Alexey Presniakov (me@klad.me)
+.br
+https://github.com/klad-me/jsh
+

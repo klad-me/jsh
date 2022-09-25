@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 	for (int n=0; n<argc-2; n++)
 	{
 		js_pushstring(J, argv[2+n]);
-		js_setindex(J, n, -2);
+		js_setindex(J, -2, n);
 	}
 	js_setproperty(J, -2, "args");
 	

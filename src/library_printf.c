@@ -164,7 +164,7 @@ parse_flags:
 		if (flags & STRING)
 		{
 			// String
-			const char *s=js_tostring(J, 2+n);
+			const char *s=js_tostring(J, 2+n++);
 			int len=strlen(s);
 			if (! (flags & LEFT))
 			{
@@ -178,7 +178,7 @@ parse_flags:
 		if (flags & FLOAT)
 		{
 			// Float
-			double v=js_trynumber(J, 2+n, 0);
+			double v=js_trynumber(J, 2+n++, 0);
 			
 			char f[16], *s=f;
 			
@@ -202,7 +202,7 @@ parse_flags:
 		} else
 		{
 			// Integer
-			long long int v=js_trynumber(J, 2+n, 0);
+			long long int v=js_trynumber(J, 2+n++, 0);
 			
 			char f[16], *s=f;
 			
